@@ -1,0 +1,31 @@
+name: Build Mex AI APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Project unzip karo
+        run: |
+          unzip -q MexAI.zip
+          if [ -f mex.ppn ]; then
+            mkdir -p MexAI/app/src/main/assets
+            cp mex.ppn MexAI/app/src/main/assets/mex.ppn
+          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK build karo
+        working-directory: MexAI
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MexAI-APK
+          path: MexAI/app/build/outputs/apk/debug/app-debug.apk
